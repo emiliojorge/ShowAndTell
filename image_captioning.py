@@ -65,8 +65,8 @@ dataset = dataset.map(lambda x, y, z: ({'input_1':x, 'input_2':y}, z))
 #dataset = dataset.batch(32, drop_remainder=True)
 n_data = padded_captions.shape[0]
 
-test_set = dataset.take(int(test_fraction*n_data)).shuffle(1000).batch(32)
-train_set = dataset.skip(int(test_fraction*n_data)).shuffle(1000).batch(32)
+test_set = dataset.take(int(test_fraction*n_data)).shuffle(1000).batch(batch_size)
+train_set = dataset.skip(int(test_fraction*n_data)).shuffle(1000).batch(batch_size)
 
 """# Model"""
 
@@ -128,12 +128,12 @@ lstm = keras.layers.LSTM(512, recurrent_dropout = 0.0, return_sequences=True)(me
 lstm_output = keras.layers.Dense(num_words, activation='softmax')(lstm)
 #cropping = tf.keras.layers.Cropping1D(cropping=(0,1))(lstm_output)
 model = Model(inputs=[img_input, caption_input], outputs=lstm_output)
-opt = tf.keras.optimizers.SGD(learning_rate=0.01, 
+opt = tf.keras.optimizers.SGD(learning_rate=0.01/batch_size,
                               momentum=0.0, 
                               nesterov=False, 
                               name="SGD") # See section 4.3.1
 
-model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM),
               optimizer=opt, 
               metrics=['accuracy'])
 
