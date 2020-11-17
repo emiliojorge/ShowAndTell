@@ -3,7 +3,7 @@
 #SBATCH -p alvis
 #SBATCH -n 4
 #SBATCH -t 0-12:00:00
-#SBATCH --gpus-per-node 1
+#SBATCH --gpus-per-node=V100:1
 #SBATCH --mail-user=emilio.jorge@chalmers.se --mail-type=END,FAIL
 #module load intel/2019b Python/3.7.4
 #module load intel/2018b Python/3.6.6 GCC
