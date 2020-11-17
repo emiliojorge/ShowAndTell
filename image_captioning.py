@@ -133,7 +133,7 @@ opt = tf.keras.optimizers.SGD(learning_rate=0.01,
                               nesterov=False, 
                               name="SGD") # See section 4.3.1
 
-model.compile(loss="sparse_categorical_crossentropy",
+model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
               optimizer=opt, 
               metrics=['accuracy'])
 
