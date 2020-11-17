@@ -2,7 +2,7 @@
 
 lr_train=(0.01 0.001)
 dropout_rnn=(0 0.1)
-cnn=(dense, globalpool)
+cnn=(dense globalpool)
 
 for lr in ${lr_train[@]} ; do
     for dropout in ${dropout_rnn[@]} ; do
