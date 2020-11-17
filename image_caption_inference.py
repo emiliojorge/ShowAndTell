@@ -131,11 +131,11 @@ model.compile(loss="sparse_categorical_crossentropy",
 
 model.summary()
 
-#model.load_weights('./captioning_model/2020-11-17-10:04/model.h5')
+model.load_weights('./captioning_model/2020-11-17-10:04/model.h5')
 #model.fit(train_set, epochs=20)
 #model.evaluate(test_set)
 #model.save('./captioning_model')
-model = keras.models.load_model('./captioning_model', custom_objects={'masking': ConstantMask})
+#model = keras.models.load_model('./captioning_model', custom_objects={'masking': ConstantMask})
 
 """# Image caption generation"""
 
