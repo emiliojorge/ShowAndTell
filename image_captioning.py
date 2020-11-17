@@ -1,5 +1,14 @@
 import argparse
-
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+from datetime import datetime
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing import image
+from tensorflow import keras
+from tensorflow.keras.applications import vgg16
+from tensorflow.keras.models import Model
 
 """# Miscellaneous"""
 
@@ -22,8 +31,8 @@ cnn_top = args.cnn_top
 
 """# Preprocessing of captions"""
 
-import pandas as pd
-import numpy as np
+
+
 
 df = pd.read_csv('train/captions.txt')
 df = df[df.caption.notnull()]
@@ -32,8 +41,6 @@ stop_word = 'STOPWORD'
 captions = [x + ' ' + stop_word for x in captions]
 #print(captions)
 
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 """ ------------------ Tokenization -------------------- """
 
@@ -78,8 +85,6 @@ stop_word_idx = filtered_vocab[t.texts_to_sequences([stop_word])[0][0]]
 
 filenames = df[['image']].to_numpy().flatten()
 
-import tensorflow as tf
-from tensorflow.keras.preprocessing import image
 
 label_captions = padded_captions
 input_captions = padded_captions
@@ -104,10 +109,7 @@ train_set = dataset.skip(int(test_fraction*n_data)).shuffle(1000).batch(batch_si
 
 """# Load pre-trained VGG16 model"""
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.applications import vgg16
-from tensorflow.keras.models import Model
+
 
 # VGG16
 vgg16_conv = vgg16.VGG16(weights='imagenet',
@@ -126,7 +128,6 @@ output_vgg16_conv = vgg16_conv(img_input)
 
 # Turn output of VGG16 into sequence of 1 time step
 
-# If 'include_top' is False
 if cnn_top=="globalpool":
     cnn_out = keras.layers.GlobalMaxPooling2D()(output_vgg16_conv)
 
@@ -138,6 +139,8 @@ else:
     raise NotImplementedError
 
 cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_out)
+
+
 
 class ConstantMask(keras.layers.Layer):
     def call(self, inputs):
@@ -171,7 +174,7 @@ opt = tf.keras.optimizers.SGD(learning_rate=lr/batch_size,
                               nesterov=False, 
                               name="SGD") # See section 4.3.1
 
-model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM),
+model.compile(loss=keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM),
               optimizer=opt, 
               metrics=['accuracy'])
 
@@ -186,6 +189,7 @@ from datetime import datetime
 file_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S_") + str(lr) + "_"+str(dropout) + "_" + cnn_top
 
 
+
 cp_callback = keras.callbacks.ModelCheckpoint(
     filepath='./captioning_model/check_point/'+ file_stamp + 'weights_epoch_{epoch:02d}.hdf5',
     verbose=1, 
@@ -198,6 +202,6 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 
 """# Image caption generation"""
 
-model.save('./captioning_model/'+file_stamp+'/')
-model.save('./captioning_model/'+file_stamp+'/model.h5')
+model.save('./captioning_model/'+time_stamp+'/')
+model.save('./captioning_model/'+time_stamp+'/model.h5')
 
