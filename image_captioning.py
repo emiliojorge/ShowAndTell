@@ -14,6 +14,7 @@ parser.add_argument('--lr', type=float, help='learning rate', default =0.01)
 parser.add_argument('--cnn_top', type=str, help="end of CNN", default = "dense")
 args = parser.parse_args()
 
+print(args)
 lr = args.lr
 dropout = args.dropout
 cnn_top = args.cnn_top
