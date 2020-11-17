@@ -117,7 +117,8 @@ output_vgg16_conv = vgg16_conv(img_input)
 
 # If 'include_top' is False
 
-cnn_dense = keras.layers.Dense(512)(output_vgg16_conv)
+cnn_flatten = keras.layers.Flatten()(output_vgg16_conv)
+cnn_dense = keras.layers.Dense(512)(cnn_flatten)
 cnn_dense = keras.layers.Dense(512)(cnn_dense)
 cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
 
@@ -159,7 +160,6 @@ model.compile(loss=keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras
 
 
 model.summary()
-
 
 time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
