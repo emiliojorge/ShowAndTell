@@ -113,7 +113,8 @@ output_vgg16_conv = vgg16_conv(img_input)
 # Turn output of VGG16 into sequence of 1 time step
 
 # If 'include_top' is False
-cnn_dense = keras.layers.Dense(512)(output_vgg16_conv)
+cnn_flatten = keras.layers.Flatten(output_vgg16_conv)
+cnn_dense = keras.layers.Dense(512)(cnn_flatten)
 cnn_dense = keras.layers.Dense(512)(cnn_dense)
 cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
 
@@ -157,6 +158,8 @@ model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.ke
 model.summary()
 
 #model.load_weights("model.h5")
+from datetime import datetime
+
 time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
 
@@ -172,7 +175,6 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 
 """# Image caption generation"""
 
-from datetime import datetime
 model.save('./captioning_model/'+time_stamp+'/')
 model.save('./captioning_model/'+time_stamp+'/model.h5')
 
