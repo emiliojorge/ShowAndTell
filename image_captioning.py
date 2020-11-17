@@ -65,6 +65,7 @@ dataset = dataset.map(lambda x, y, z: ({'input_1':x, 'input_2':y}, z))
 #dataset = dataset.batch(32, drop_remainder=True)
 n_data = padded_captions.shape[0]
 
+batch_size = 32
 test_set = dataset.take(int(test_fraction*n_data)).shuffle(1000).batch(batch_size)
 train_set = dataset.skip(int(test_fraction*n_data)).shuffle(1000).batch(batch_size)
 
