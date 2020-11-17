@@ -80,7 +80,7 @@ img_input = keras.layers.Input(shape=(img_height,img_width,img_channels))
 vgg16_conv.trainable = False
 
 # We only change the activation of the last layer from softmax to relu
-vgg16_conv.layers[-1].activation = keras.activations.relu
+#vgg16_conv.layers[-1].activation = keras.activations.relu
 vgg16_conv.compile(loss="mse") 
 #vgg16_conv.summary()
 #print(vgg16_conv.get_config())
