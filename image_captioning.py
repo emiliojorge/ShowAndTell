@@ -21,19 +21,35 @@ captions = [x + ' ' + stop_word for x in captions]
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+""" ------------------ Tokenization -------------------- """
+
 t = Tokenizer()
 t.fit_on_texts(captions)
 
 num_word_count_over_5 = 0
+removed_tokens = set()
+filtered_vocab = dict()
+words_from_filtered = dict()
 for item in t.word_counts.items():
+    token = t.texts_to_sequences([[item[0]]])[0][0]
     if item[1] >= 5:
-       num_word_count_over_5+=1
+        num_word_count_over_5+=1
+        filtered_vocab[token] = num_word_count_over_5
+        words_from_filtered[num_word_count_over_5] = item[0]
+    else:
+        removed_tokens.add(token)
 
-t = Tokenizer(num_words=num_word_count_over_5+1)
-t.fit_on_texts(captions)
+orig_seq = t.texts_to_sequences(captions)
+filtered_seq = []
+for sentence in orig_seq:
+    filtered_seq.append([])
+    for token in sentence:
+        if token not in removed_tokens:
+            filtered_seq[-1].append(token)
 
-num_words = len(t.word_index) + 1
-seq = t.texts_to_sequences(captions)
+
+num_words = num_word_count_over_5 + 1
+seq = [[filtered_vocab[y] for y in x] for x in filtered_seq]
 
 # Maximum length of any sequence, plus one stop word
 maxlen = max([len(x) for x in seq])
@@ -41,11 +57,10 @@ maxlen = max([len(x) for x in seq])
 padded_captions = pad_sequences(seq, maxlen=maxlen, padding='post')
 #print(padded_captions)
 
-stop_word_idx = t.texts_to_sequences([stop_word])[0][0]
+stop_word_idx = filtered_vocab[t.texts_to_sequences([stop_word])[0][0]]
 
-maxlen
 
-"""# Preprocessing of images"""
+""" ------------------  Preprocessing of images -------------------- """
 
 filenames = df[['image']].to_numpy().flatten()
 
