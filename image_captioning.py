@@ -98,11 +98,9 @@ output_vgg16_conv = vgg16_conv(img_input)
 # Turn output of VGG16 into sequence of 1 time step
 
 # If 'include_top' is False
-cnn_global_pooling = keras.layers.GlobalMaxPooling2D()(output_vgg16_conv)
-cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_global_pooling)
-
-#cnn_dense = keras.layers.Dense(512)(output_vgg16_conv)
-#cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
+cnn_dense = keras.layers.Dense(512)(output_vgg16_conv)
+cnn_dense = keras.layers.Dense(512)(cnn_dense)
+cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
 
 class ConstantMask(keras.layers.Layer):
     def call(self, inputs):
