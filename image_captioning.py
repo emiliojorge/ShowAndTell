@@ -144,12 +144,15 @@ model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.ke
 model.summary()
 
 #model.load_weights("model.h5")
+time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+
 
 cp_callback = keras.callbacks.ModelCheckpoint(
-    filepath='./captioning_model/check_point/weights_epoch_{epoch:02d}.hdf5', 
+    filepath='./captioning_model/check_point/'+ time_stamp + 'weights_epoch_{epoch:02d}.hdf5',
     verbose=1, 
     save_weights_only=True,
     save_freq= 'epoch')
+
 
 model.fit(train_set, epochs=30, callbacks=[cp_callback])
 #model.evaluate(test_set)
@@ -157,7 +160,6 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 """# Image caption generation"""
 
 from datetime import datetime
-time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M")
 model.save('./captioning_model/'+time_stamp+'/')
 model.save('./captioning_model/'+time_stamp+'/model.h5')
 
