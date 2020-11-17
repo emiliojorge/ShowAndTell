@@ -80,7 +80,7 @@ img_input = keras.layers.Input(shape=(img_height,img_width,img_channels))
 vgg16_conv.trainable = False
 
 # We only change the activation of the last layer from softmax to relu
-vgg16_conv.layers[-1].activation = keras.activations.relu
+#vgg16_conv.layers[-1].activation = keras.activations.relu
 vgg16_conv.compile(loss="mse") 
 #vgg16_conv.summary()
 #print(vgg16_conv.get_config())
@@ -131,11 +131,11 @@ model.compile(loss="sparse_categorical_crossentropy",
 
 model.summary()
 
-#model.load_weights('./captioning_model/2020-11-17-10:04/model.h5')
+model.load_weights('./captioning_model/2020-11-17-10:04/model.h5')
 #model.fit(train_set, epochs=20)
 #model.evaluate(test_set)
 #model.save('./captioning_model')
-model = keras.models.load_model('./captioning_model', custom_objects={'masking': ConstantMask})
+#model = keras.models.load_model('./captioning_model', custom_objects={'masking': ConstantMask})
 
 """# Image caption generation"""
 

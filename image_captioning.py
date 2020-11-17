@@ -80,8 +80,9 @@ dataset = dataset.map(lambda x, y, z: ({'input_1':x, 'input_2':y}, z))
 #dataset = dataset.batch(32, drop_remainder=True)
 n_data = padded_captions.shape[0]
 
-test_set = dataset.take(int(test_fraction*n_data)).shuffle(1000).batch(32)
-train_set = dataset.skip(int(test_fraction*n_data)).shuffle(1000).batch(32)
+batch_size = 32
+test_set = dataset.take(int(test_fraction*n_data)).shuffle(1000).batch(batch_size)
+train_set = dataset.skip(int(test_fraction*n_data)).shuffle(1000).batch(batch_size)
 
 """# Model"""
 
@@ -112,11 +113,9 @@ output_vgg16_conv = vgg16_conv(img_input)
 # Turn output of VGG16 into sequence of 1 time step
 
 # If 'include_top' is False
-cnn_global_pooling = keras.layers.GlobalMaxPooling2D()(output_vgg16_conv)
-cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_global_pooling)
-
-#cnn_dense = keras.layers.Dense(512)(output_vgg16_conv)
-#cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
+cnn_dense = keras.layers.Dense(512)(output_vgg16_conv)
+cnn_dense = keras.layers.Dense(512)(cnn_dense)
+cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
 
 class ConstantMask(keras.layers.Layer):
     def call(self, inputs):
@@ -143,12 +142,12 @@ lstm = keras.layers.LSTM(512, recurrent_dropout = 0.0, return_sequences=True)(me
 lstm_output = keras.layers.Dense(num_words, activation='softmax')(lstm)
 #cropping = tf.keras.layers.Cropping1D(cropping=(0,1))(lstm_output)
 model = Model(inputs=[img_input, caption_input], outputs=lstm_output)
-opt = tf.keras.optimizers.SGD(learning_rate=0.01, 
+opt = tf.keras.optimizers.SGD(learning_rate=0.01/batch_size,
                               momentum=0.0, 
                               nesterov=False, 
                               name="SGD") # See section 4.3.1
 
-model.compile(loss="sparse_categorical_crossentropy",
+model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras.losses.Reduction.SUM),
               optimizer=opt, 
               metrics=['accuracy'])
 
@@ -158,12 +157,15 @@ model.compile(loss="sparse_categorical_crossentropy",
 model.summary()
 
 #model.load_weights("model.h5")
+time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+
 
 cp_callback = keras.callbacks.ModelCheckpoint(
-    filepath='./captioning_model/check_point/weights_epoch_{epoch:02d}.hdf5', 
+    filepath='./captioning_model/check_point/'+ time_stamp + 'weights_epoch_{epoch:02d}.hdf5',
     verbose=1, 
     save_weights_only=True,
     save_freq= 'epoch')
+
 
 model.fit(train_set, epochs=30, callbacks=[cp_callback])
 #model.evaluate(test_set)
@@ -171,7 +173,6 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 """# Image caption generation"""
 
 from datetime import datetime
-time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M")
 model.save('./captioning_model/'+time_stamp+'/')
 model.save('./captioning_model/'+time_stamp+'/model.h5')
 
