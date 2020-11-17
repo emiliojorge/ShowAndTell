@@ -142,6 +142,8 @@ model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.ke
 model.summary()
 
 #model.load_weights("model.h5")
+from datetime import datetime
+
 time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
 
@@ -157,7 +159,6 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 
 """# Image caption generation"""
 
-from datetime import datetime
 model.save('./captioning_model/'+time_stamp+'/')
 model.save('./captioning_model/'+time_stamp+'/model.h5')
 
