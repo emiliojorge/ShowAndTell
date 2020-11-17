@@ -1,3 +1,5 @@
+import argparse
+
 
 """# Miscellaneous"""
 
@@ -5,6 +7,17 @@ img_height = 224
 img_width = 224
 
 test_fraction = 0.2
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--dropout', type=float, help='recurrent dropout', default =0.0)
+parser.add_argument('--lr', type=float, help='learning rate', default =0.01)
+parser.add_argument('--cnn_top', type=str, help="end of CNN", default = "dense")
+args = parser.parse_args()
+
+lr = args.lr
+dropout = args.dropout
+cnn_top = args.cnn_top
+
 
 """# Preprocessing of captions"""
 
@@ -113,10 +126,17 @@ output_vgg16_conv = vgg16_conv(img_input)
 # Turn output of VGG16 into sequence of 1 time step
 
 # If 'include_top' is False
-cnn_flatten = keras.layers.Flatten()(output_vgg16_conv)
-cnn_dense = keras.layers.Dense(512)(cnn_flatten)
-cnn_dense = keras.layers.Dense(512)(cnn_dense)
-cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
+if cnn_top=="globalpool":
+    cnn_out = keras.layers.GlobalMaxPooling2D()(output_vgg16_conv)
+
+elif cnn_top=="dense":
+    cnn_flatten = keras.layers.Flatten()(output_vgg16_conv)
+    cnn_dense = keras.layers.Dense(512)(cnn_flatten)
+    cnn_out = keras.layers.Dense(512)(cnn_dense)
+else:
+    raise NotImplementedError
+
+cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_out)
 
 class ConstantMask(keras.layers.Layer):
     def call(self, inputs):
@@ -139,11 +159,13 @@ merged = keras.layers.Concatenate(axis=1)([cnn_seq_mask, rnn_embed])
 # LSTM layer with merged sequence as input
 # For dropout, see [34], it is unclear if the parameter 'dropout' was used in the original paper
 # Not sure how "ensembling" is used...
-lstm = keras.layers.LSTM(512, recurrent_dropout = 0.0, return_sequences=True)(merged)
+
+
+lstm = keras.layers.LSTM(512, recurrent_dropout = dropout, return_sequences=True)(merged)
 lstm_output = keras.layers.Dense(num_words, activation='softmax')(lstm)
 #cropping = tf.keras.layers.Cropping1D(cropping=(0,1))(lstm_output)
 model = Model(inputs=[img_input, caption_input], outputs=lstm_output)
-opt = tf.keras.optimizers.SGD(learning_rate=0.01/batch_size,
+opt = tf.keras.optimizers.SGD(learning_rate=lr/batch_size,
                               momentum=0.0, 
                               nesterov=False, 
                               name="SGD") # See section 4.3.1
@@ -160,11 +182,11 @@ model.summary()
 #model.load_weights("model.h5")
 from datetime import datetime
 
-time_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+file_stamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S_") + str(lr) + "_"+str(dropout) + "_" + cnn_top
 
 
 cp_callback = keras.callbacks.ModelCheckpoint(
-    filepath='./captioning_model/check_point/'+ time_stamp + 'weights_epoch_{epoch:02d}.hdf5',
+    filepath='./captioning_model/check_point/'+ file_stamp + 'weights_epoch_{epoch:02d}.hdf5',
     verbose=1, 
     save_weights_only=True,
     save_freq= 'epoch')
@@ -175,6 +197,6 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 
 """# Image caption generation"""
 
-model.save('./captioning_model/'+time_stamp+'/')
-model.save('./captioning_model/'+time_stamp+'/model.h5')
+model.save('./captioning_model/'+file_stamp+'/')
+model.save('./captioning_model/'+file_stamp+'/model.h5')
 
