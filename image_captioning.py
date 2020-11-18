@@ -117,6 +117,7 @@ cnn_flatten = keras.layers.Flatten()(output_vgg16_conv)
 cnn_dense = keras.layers.Dense(512)(cnn_flatten)
 cnn_dense = keras.layers.Dense(512)(cnn_dense)
 cnn_seq = keras.layers.Reshape(target_shape=(1,512))(cnn_dense)
+cnn_seq = keras.layers.BatchNormalization()(cnn_seq)
 
 class ConstantMask(keras.layers.Layer):
     def call(self, inputs):
@@ -170,7 +171,7 @@ cp_callback = keras.callbacks.ModelCheckpoint(
     save_freq= 'epoch')
 
 
-model.fit(train_set, epochs=30, callbacks=[cp_callback])
+model.fit(train_set, epochs=2, callbacks=[cp_callback])
 #model.evaluate(test_set)
 
 """# Image caption generation"""
