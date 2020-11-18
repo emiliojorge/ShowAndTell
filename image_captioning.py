@@ -202,6 +202,7 @@ model.fit(train_set, epochs=30, callbacks=[cp_callback])
 
 """# Image caption generation"""
 
+print('Saving ./captioning_model/'+file_stamp+'/')
 model.save('./captioning_model/'+file_stamp+'/')
 model.save('./captioning_model/'+file_stamp+'/model.h5')
 
